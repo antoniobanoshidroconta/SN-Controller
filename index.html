@@ -309,7 +309,7 @@ Ejemplo: 25/134144; 25/134158; 25/134186"></textarea>
 function extraer(raw) {
   return raw
     .replace(/\r\n|\r/g, '\n')
-    .split(/[;,\n]+/)
+    .split(/[;,\n\-:]+/)
     .map(s => s.trim().replace(/\s+/g, ''))
     .filter(s => s.length > 0);
 }
