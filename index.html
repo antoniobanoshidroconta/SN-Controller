@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verificador de Números de Serie — Hidroconta</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue: #003E51;
+  --blue-dark: #002d3b;
+  --blue-light: #e6eef1;
+  --blue-mid: #ccdde3;
+  --green: #64A70B;
+  --green-dark: #4d8209;
+  --green-light: #eef6e0;
+  --green-mid: #d4ecab;
+  --grad: linear-gradient(90deg, #003E51 0%, #64A70B 100%);
+  --grad-hover: linear-gradient(90deg, #002d3b 0%, #4d8209 100%);
+  --bg: #f4f6f2;
+  --surface: #ffffff;
+  --surface2: #f0f4ee;
+  --border: #dde5d8;
+  --border2: #c8d4c0;
+  --text: #1a2a14;
+  --text2: #4a5e42;
+  --text3: #8a9e80;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Inter', sans-serif;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow: 0 1px 3px rgba(0,62,81,0.08), 0 4px 16px rgba(0,62,81,0.06);
+}
+
+html { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+body { min-height: 100vh; display: flex; flex-direction: column; }
+
+.site-header {
+  background: var(--grad);
+  box-shadow: 0 2px 16px rgba(0,62,81,0.22);
+}
+.header-inner {
+  max-width: 860px; margin: 0 auto;
+  padding: 1.25rem 2rem;
+  display: flex; align-items: center; gap: 14px;
+}
+.logo-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255,255,255,0.28);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.logo-text { color: #fff; }
+.logo-text strong { display: block; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+.logo-text span { font-size: 11px; opacity: 0.72; letter-spacing: 0.05em; text-transform: uppercase; }
+
+main { max-width: 860px; margin: 0 auto; width: 100%; padding: 2.5rem 2rem 5rem; flex: 1; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+.card-header {
+  background: var(--grad);
+  padding: 12px 20px;
+  display: flex; align-items: center; gap: 9px;
+}
+.card-header h2 { font-size: 13px; font-weight: 600; color: #fff; }
+.card-header .badge {
+  margin-left: auto; font-size: 10px; font-weight: 700;
+  background: rgba(255,255,255,0.2); color: #fff;
+  padding: 2px 10px; border-radius: 20px; letter-spacing: 0.05em; text-transform: uppercase;
+}
+.card-body { padding: 20px; }
+
+.field-label {
+  font-size: 11px; font-weight: 600; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px;
+}
+textarea {
+  width: 100%; min-height: 150px;
+  font-family: var(--mono); font-size: 12px; line-height: 1.75;
+  padding: 14px 16px;
+  background: var(--surface2); color: var(--text);
+  border: 1.5px solid var(--border2); border-radius: var(--radius);
+  resize: vertical; transition: border-color 0.15s;
+}
+textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,62,81,0.08); }
+textarea::placeholder { color: var(--text3); }
+
+.btn-row { display: flex; gap: 8px; margin-top: 14px; align-items: center; }
+.hint { font-size: 11px; color: var(--text3); margin-left: auto; }
+
+button {
+  font-family: var(--sans); font-size: 13px; font-weight: 600;
+  padding: 9px 20px; border-radius: var(--radius);
+  cursor: pointer; transition: all 0.15s; border: none;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+button.primary { background: var(--grad); color: #fff; box-shadow: 0 2px 8px rgba(0,62,81,0.2); }
+button.primary:hover { background: var(--grad-hover); box-shadow: 0 4px 14px rgba(0,62,81,0.3); }
+button.secondary { background: var(--surface2); color: var(--text2); border: 1.5px solid var(--border2); }
+button.secondary:hover { background: var(--blue-light); color: var(--blue); border-color: var(--blue-mid); }
+button:active { transform: scale(0.98); }
+
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 1.25rem; }
+.metric {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+  border-left: 3px solid var(--blue-mid);
+}
+.metric.ok { border-left-color: var(--green); }
+.metric.warn { border-left-color: #c44a1a; }
+.metric-label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+.metric-value { font-family: var(--mono); font-size: 30px; font-weight: 500; color: var(--blue); }
+.metric.ok .metric-value { color: var(--green-dark); }
+.metric.warn .metric-value { color: #c44a1a; }
+
+.status-banner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border-radius: var(--radius);
+  margin-bottom: 1.25rem; font-size: 13px; font-weight: 500;
+}
+.status-banner.ok { background: var(--green-light); color: var(--green-dark); border: 1px solid var(--green-mid); }
+.status-banner.warn { background: #fceee9; color: #a3280a; border: 1px solid #f5c4b3; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.status-banner.ok .status-dot { background: var(--green); }
+.status-banner.warn .status-dot { background: #e05a2b; }
+
+.tag-list { display: flex; flex-wrap: wrap; gap: 5px; }
+.tag { font-family: var(--mono); font-size: 11px; padding: 3px 9px; border-radius: 4px; font-weight: 500; }
+.tag.dup { background: #fceee9; color: #a3280a; border: 1px solid #f5c4b3; }
+.tag.invalid { background: #fef6e4; color: #7a4f00; border: 1px solid #fcd97a; }
+
+.num-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 4px 8px;
+}
+.num-item {
+  font-family: var(--mono); font-size: 11.5px;
+  color: var(--text2); padding: 3px 0;
+  display: flex; align-items: center; gap: 5px;
+}
+.num-item .idx { color: var(--text3); font-size: 10px; min-width: 20px; text-align: right; }
+
+.output-box {
+  background: var(--surface2); border: 1.5px solid var(--border2);
+  border-radius: var(--radius); padding: 16px;
+  font-family: var(--mono); font-size: 12px;
+  color: var(--text); line-height: 1.8; word-break: break-all;
+}
+.copy-row { display: flex; justify-content: flex-end; margin-top: 10px; }
+.copy-btn {
+  font-size: 12px; padding: 8px 18px;
+  background: var(--grad); color: #fff; border: none;
+  border-radius: var(--radius); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--sans); font-weight: 600;
+  transition: all 0.15s;
+}
+.copy-btn:hover { background: var(--grad-hover); }
+.copy-btn:active { transform: scale(0.98); }
+
+footer {
+  text-align: center; padding: 1.5rem;
+  font-size: 11px; color: var(--text3);
+  border-top: 1px solid var(--border);
+}
+footer a { color: var(--blue); text-decoration: none; font-weight: 500; }
+footer a:hover { color: var(--green); }
+
+.results { display: none; }
+
+@media (max-width: 600px) {
+  .metrics { grid-template-columns: 1fr 1fr; }
+  main { padding: 1.5rem 1rem 3rem; }
+  .header-inner { padding: 1rem 1.25rem; }
+  .hint { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <strong>Hidroconta</strong>
+      <span>Verificador de Números de Serie</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <div class="card-header">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      <h2>Entrada de datos</h2>
+      <span class="badge">Formato YY/XXXXXX</span>
+    </div>
+    <div class="card-body">
+      <div class="field-label">Lista de números de serie</div>
+      <textarea id="input" placeholder="Pega aquí la lista de números de serie.
+Separadores admitidos: ; , saltos de línea, separadores dobles...
+Ejemplo: 25/134144; 25/134158; 25/134186"></textarea>
+      <div class="btn-row">
+        <button class="primary" onclick="procesar()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Verificar
+        </button>
+        <button class="secondary" onclick="limpiar()">Limpiar</button>
+        <span class="hint">Atajo: Ctrl + Enter</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="results" id="results">
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-label">Total encontrados</div>
+        <div class="metric-value" id="m-total">0</div>
+      </div>
+      <div class="metric ok">
+        <div class="metric-label">Válidos únicos</div>
+        <div class="metric-value" id="m-valid">0</div>
+      </div>
+      <div class="metric" id="m-dups-card">
+        <div class="metric-label">Duplicados</div>
+        <div class="metric-value" id="m-dups">0</div>
+      </div>
+    </div>
+
+    <div class="status-banner ok" id="status-banner">
+      <div class="status-dot"></div>
+      <span id="status-text"></span>
+    </div>
+
+    <div id="invalids-section" class="card" style="display:none;">
+      <div class="card-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <h2>Formato incorrecto</h2>
+        <span class="badge" id="invalids-count-badge">0</span>
+      </div>
+      <div class="card-body">
+        <div class="tag-list" id="invalids-list"></div>
+      </div>
+    </div>
+
+    <div id="dups-section" class="card" style="display:none;">
+      <div class="card-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        <h2>Duplicados detectados</h2>
+        <span class="badge" id="dups-count-badge">0</span>
+      </div>
+      <div class="card-body">
+        <div class="tag-list" id="dups-list"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        <h2>Listado numerado</h2>
+        <span class="badge" id="list-count-badge">0</span>
+      </div>
+      <div class="card-body">
+        <div class="num-grid" id="num-list"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <h2>Texto de salida</h2>
+      </div>
+      <div class="card-body">
+        <div class="output-box" id="output-text"></div>
+        <div class="copy-row">
+          <button class="copy-btn" onclick="copiar()" id="copy-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copiar texto
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <a href="https://www.hidroconta.com" target="_blank">hidroconta.com</a> &nbsp;·&nbsp; Verificador de Números de Serie
+</footer>
+
+<script>
+function extraer(raw) {
+  return raw
+    .replace(/\r\n|\r/g, '\n')
+    .split(/[;,\n]+/)
+    .map(s => s.trim().replace(/\s+/g, ''))
+    .filter(s => s.length > 0);
+}
+
+function esValido(s) {
+  return /^\d{2}\/\d{6}$/.test(s);
+}
+
+function procesar() {
+  const raw = document.getElementById('input').value;
+  if (!raw.trim()) return;
+
+  const tokens = extraer(raw);
+  const seen = {};
+  const dups = new Set();
+  tokens.forEach(t => {
+    if (seen[t]) dups.add(t);
+    else seen[t] = true;
+  });
+
+  const invalidos = tokens.filter(t => !esValido(t));
+  const todosValidos = tokens.filter(t => esValido(t));
+  const unicos = [...new Set(todosValidos)];
+  const dupsList = [...dups].filter(d => esValido(d));
+
+  document.getElementById('m-total').textContent = tokens.length;
+  document.getElementById('m-valid').textContent = unicos.length;
+  document.getElementById('m-dups').textContent = dupsList.length;
+
+  const dupsCard = document.getElementById('m-dups-card');
+  dupsCard.className = 'metric ' + (dupsList.length > 0 ? 'warn' : 'ok');
+  document.getElementById('m-dups').className = 'metric-value';
+
+  const banner = document.getElementById('status-banner');
+  const statusText = document.getElementById('status-text');
+  const issues = [];
+  if (dupsList.length > 0) issues.push(dupsList.length + ' duplicado' + (dupsList.length > 1 ? 's' : '') + ' detectado' + (dupsList.length > 1 ? 's' : ''));
+  if (invalidos.length > 0) issues.push(invalidos.length + ' con formato incorrecto');
+
+  if (issues.length === 0) {
+    banner.className = 'status-banner ok';
+    statusText.textContent = 'Sin duplicados. Todos los números tienen formato correcto.';
+  } else {
+    banner.className = 'status-banner warn';
+    statusText.textContent = 'Atención: ' + issues.join(' · ') + '.';
+  }
+
+  if (invalidos.length > 0) {
+    document.getElementById('invalids-section').style.display = 'block';
+    document.getElementById('invalids-count-badge').textContent = invalidos.length;
+    document.getElementById('invalids-list').innerHTML = invalidos.map(s =>
+      '<span class="tag invalid">' + escHTML(s) + '</span>'
+    ).join('');
+  } else {
+    document.getElementById('invalids-section').style.display = 'none';
+  }
+
+  if (dupsList.length > 0) {
+    document.getElementById('dups-section').style.display = 'block';
+    document.getElementById('dups-count-badge').textContent = dupsList.length;
+    document.getElementById('dups-list').innerHTML = dupsList.map(s =>
+      '<span class="tag dup">' + escHTML(s) + '</span>'
+    ).join('');
+  } else {
+    document.getElementById('dups-section').style.display = 'none';
+  }
+
+  document.getElementById('list-count-badge').textContent = unicos.length;
+  document.getElementById('num-list').innerHTML = unicos.map((s, i) =>
+    '<div class="num-item"><span class="idx">' + (i + 1) + '.</span>' + escHTML(s) + '</div>'
+  ).join('');
+
+  const texto = 'Nº de serie: ' + unicos.join('; ');
+  document.getElementById('output-text').textContent = texto;
+  document.getElementById('results').style.display = 'block';
+  setTimeout(() => document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+}
+
+function limpiar() {
+  document.getElementById('input').value = '';
+  document.getElementById('results').style.display = 'none';
+}
+
+function escHTML(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function copiar() {
+  const t = document.getElementById('output-text').textContent;
+  navigator.clipboard.writeText(t).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copiado';
+    setTimeout(() => {
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copiar texto';
+    }, 2200);
+  });
+}
+
+document.getElementById('input').addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.key === 'Enter') procesar();
+});
+</script>
+</body>
+</html>
